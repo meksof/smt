@@ -1,0 +1,6 @@
+.env
+.env.*
+/secrets
+/sensitive-data
+.credentials
+.key

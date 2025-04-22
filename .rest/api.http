@@ -1,0 +1,28 @@
+POST http://localhost:3000/track HTTP/1.1
+Content-Type: application/json
+
+{
+    "duration": 10,
+    "referrer": "http://localhost:3000",
+    "utm_source": "REST"
+}
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 33
+etag: W/"21-gPBqjJtNQPjl6lkFLhZPVda8TTc"
+date: Tue, 22 Apr 2025 09:09:14 GMT
+connection: close
+###
+GET http://localhost:3000/metrics/views?startDate=2025-03-22&endDate=2025-04-22 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 11
+etag: W/"b-ch7MNww9+xUYoTgutbGr6VU0GaU"
+date: Tue, 22 Apr 2025 09:09:01 GMT
+connection: close
