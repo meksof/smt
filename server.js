@@ -1,9 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const { parseDate } = require('./utils');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
+
+const metricsRoutes = require('./routes/metrics');
+const trackRoutes = require('./routes/track');
+const eventRoutes = require('./routes/event');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -17,21 +21,17 @@ const client = new MongoClient(uri, {
     }
 });
 
-let db;
-let visitsCollection;
-let eventsCollection;
 
 async function connectDB() {
     try {
         await client.connect();
-        db = client.db('metricsTracker');
-        visitsCollection = db.collection('visits');
-        eventsCollection = db.collection('events');
+        const db = client.db('metricsTracker');
+        // Initialize models with db connection
+        require('./models/visitModel').init(db);
+        require('./models/eventModel').init(db);
         console.log("Connected to MongoDB");
 
-        // Create index on timestamp for better query performance
-        await visitsCollection.createIndex({ timestamp: 1 });
-        await eventsCollection.createIndex({ timestamp: 1 });
+        return client;
     } catch (err) {
         console.error("MongoDB connection error:", err);
         process.exit(1);
@@ -48,266 +48,26 @@ app.use(bodyParser.urlencoded({ extended: true })); // for application/x-www-for
 // Dashvoard static files
 app.use('/dashboard', express.static('public'));
 
-// Track visit endpoint
-app.post('/track', async (req, res) => {
-    try {
-        const { duration, referrer, page, utm_source } = req.body;
-        const visit = {
-            timestamp: new Date(), // Current date/time
-            duration: duration || 0,
-            referrer: referrer || '(direct)',
-            page: page || null,
-            utm_source: utm_source || null
-        };
+// Routes
+app.use('/metrics', metricsRoutes);
+app.use('/track', trackRoutes);
+app.use('/event', eventRoutes)
 
-        const result = await visitsCollection.insertOne(visit);
-        res.json({ id: result.insertedId });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+
+// Start server
+let server;
+connectDB().then(client => {
+    server = app.listen(port, () => {
+        console.log(`Metrics tracker running on http://localhost:${port}`);
+        console.log(`dashboard running on http://localhost:${port}/dashboard`);
+    });
 });
 
-/**
- * * Update visit duration endpoint
- * Note: The method is POST instead of PATCH
- * This is due to sendBeacon API limitations.
- * See: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon#limitations
- */
-// Unified endpoint that handles both JSON and FormData
-app.post('/track/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        let duration;
-
-        // Check if content-type is multipart/form-data
-        if (req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
-            duration = parseInt(req.body.duration);
-        }
-        // Otherwise assume JSON
-        else {
-            duration = req.body.duration;
-        }
-
-        if (isNaN(duration)) {
-            return res.status(400).json({ error: 'Invalid duration value' });
-        }
-
-        if (!ObjectId.isValid(id)) {
-            return res.status(400).json({ error: 'Invalid session ID format' });
-        }
-
-        const objectId = new ObjectId(id);
-
-        const result = await visitsCollection.updateOne(
-            { _id: objectId },
-            { $set: { duration: duration } }
-        );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ error: 'Session not found' });
-        }
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error updating session:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Add this new endpoint after the /track endpoint
-app.post('/event', async (req, res) => {
-    try {
-        const { type, value } = req.body;
-        const event = {
-            timestamp: new Date(),
-            type: type || 'unknown',
-            value: value || null
-        };
-
-        const result = await eventsCollection.insertOne(event);
-        res.json({ id: result.insertedId });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Get metrics endpoint
-app.get('/metrics', async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const query = {};
-
-        if (startDate || endDate) {
-            query.timestamp = {};
-            if (startDate) query.timestamp.$gte = parseDate(startDate);
-            if (endDate) query.timestamp.$lte = parseDate(endDate, true);
-        }
-
-        const visits = await visitsCollection.find(query).toArray();
-        res.json(visits);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Dashboard endpoints
-app.get('/metrics/views', async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const query = {};
-
-        if (startDate || endDate) {
-            query.timestamp = {};
-            if (startDate) query.timestamp.$gte = parseDate(startDate);
-            if (endDate) query.timestamp.$lte = parseDate(endDate, true);
-        }
-
-        const count = await visitsCollection.countDocuments(query);
-        res.json({ count });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/metrics/sessions', async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const matchStage = {};
-
-        if (startDate || endDate) {
-            matchStage.timestamp = {};
-            if (startDate) matchStage.timestamp.$gte = parseDate(startDate);
-            if (endDate) matchStage.timestamp.$lte = parseDate(endDate, true);
-        }
-
-        const pipeline = [];
-        if (Object.keys(matchStage).length > 0) {
-            pipeline.push({ $match: matchStage });
-        }
-
-        pipeline.push({
-            $group: {
-                _id: null,
-                avgDuration: { $avg: "$duration" },
-                totalSessions: { $sum: 1 }
-            }
-        });
-
-        const result = await visitsCollection.aggregate(pipeline).toArray();
-        const data = result[0] || { avgDuration: 0, totalSessions: 0 };
-
-        res.json({
-            avgDuration: Math.round(data.avgDuration) || 0,
-            totalSessions: data.totalSessions
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/metrics/referrers', async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const matchStage = {};
-
-        if (startDate || endDate) {
-            matchStage.timestamp = {};
-            if (startDate) matchStage.timestamp.$gte = parseDate(startDate);
-            if (endDate) matchStage.timestamp.$lte = parseDate(endDate, true);
-        }
-
-        const pipeline = [];
-        if (Object.keys(matchStage).length > 0) {
-            pipeline.push({ $match: matchStage });
-        }
-
-        pipeline.push(
-            { $group: { _id: "$referrer", count: { $sum: 1 } } },
-            { $sort: { count: -1 } }
-        );
-
-        const result = await visitsCollection.aggregate(pipeline).toArray();
-        res.json(result.map(item => ({ referrer: item._id, count: item.count })));
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.get('/metrics/sources', async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const matchStage = { utm_source: { $ne: null } };
-
-        if (startDate || endDate) {
-            matchStage.timestamp = {};
-            if (startDate) matchStage.timestamp.$gte = parseDate(startDate);
-            if (endDate) matchStage.timestamp.$lte = parseDate(endDate, true);
-        }
-
-        const pipeline = [
-            { $match: matchStage },
-            { $group: { _id: "$utm_source", count: { $sum: 1 } } },
-            { $sort: { count: -1 } }
-        ];
-
-        const result = await visitsCollection.aggregate(pipeline).toArray();
-        res.json(result.map(item => ({ utm_source: item._id, count: item.count })));
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Add this new endpoint after the other metrics endpoints
-app.get('/metrics/events', async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const matchStage = {};
-
-        if (startDate || endDate) {
-            matchStage.timestamp = {};
-            if (startDate) matchStage.timestamp.$gte = parseDate(startDate);
-            if (endDate) matchStage.timestamp.$lte = parseDate(endDate, true);
-        }
-
-        const pipeline = [];
-        if (Object.keys(matchStage).length > 0) {
-            pipeline.push({ $match: matchStage });
-        }
-
-        pipeline.push(
-            {
-                $group: {
-                    _id: {
-                        type: "$type",
-                        value: "$value"
-                    },
-                    count: { $sum: 1 }
-                }
-            },
-            {
-                $project: {
-                    type: "$_id.type",
-                    value: "$_id.value",
-                    count: 1,
-                    _id: 0
-                }
-            }
-        );
-
-        const result = await eventsCollection.aggregate(pipeline).toArray();
-        res.json(result);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Close MongoDB connection on shutdown
+// Graceful shutdown
 process.on('SIGINT', async () => {
     await client.close();
-    process.exit();
-});
-
-app.listen(port, () => {
-    console.log(`Metrics tracker running on http://localhost:${port}`);
-    console.log(`Dashboard available at http://localhost:${port}/dashboard`);
+    server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+    });
 });
