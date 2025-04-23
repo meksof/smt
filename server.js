@@ -1,8 +1,9 @@
 require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const { parseDate } = require('./utils');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -41,25 +42,74 @@ connectDB();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json()); // for application/json
+app.use(bodyParser.urlencoded({ extended: true })); // for application/x-www-form-urlencoded
 
-// add a /dashboard route to serve public/index.html
+// Dashvoard static files
 app.use('/dashboard', express.static('public'));
 
 // Track visit endpoint
 app.post('/track', async (req, res) => {
     try {
-        const { duration, referrer, utm_source } = req.body;
+        const { duration, referrer, page, utm_source } = req.body;
         const visit = {
             timestamp: new Date(), // Current date/time
             duration: duration || 0,
             referrer: referrer || '(direct)',
+            page: page || null,
             utm_source: utm_source || null
         };
 
         const result = await visitsCollection.insertOne(visit);
         res.json({ id: result.insertedId });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * * Update visit duration endpoint
+ * Note: The method is POST instead of PATCH
+ * This is due to sendBeacon API limitations.
+ * See: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon#limitations
+ */
+// Unified endpoint that handles both JSON and FormData
+app.post('/track/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        let duration;
+
+        // Check if content-type is multipart/form-data
+        if (req.headers['content-type']?.includes('application/x-www-form-urlencoded')) {
+            duration = parseInt(req.body.duration);
+        }
+        // Otherwise assume JSON
+        else {
+            duration = req.body.duration;
+        }
+
+        if (isNaN(duration)) {
+            return res.status(400).json({ error: 'Invalid duration value' });
+        }
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ error: 'Invalid session ID format' });
+        }
+
+        const objectId = new ObjectId(id);
+
+        const result = await visitsCollection.updateOne(
+            { _id: objectId },
+            { $set: { duration: duration } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error updating session:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -225,19 +275,23 @@ app.get('/metrics/events', async (req, res) => {
         }
 
         pipeline.push(
-            { $group: { 
-                _id:  {
-                    type: "$type",
-                    value: "$value"
-                },
-                count: { $sum: 1 }
-            }},
-            { $project: {
-                type: "$_id.type",
-                value: "$_id.value",
-                count: 1,
-                _id: 0
-            }}
+            {
+                $group: {
+                    _id: {
+                        type: "$type",
+                        value: "$value"
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    type: "$_id.type",
+                    value: "$_id.value",
+                    count: 1,
+                    _id: 0
+                }
+            }
         );
 
         const result = await eventsCollection.aggregate(pipeline).toArray();

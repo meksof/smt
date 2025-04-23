@@ -2,8 +2,9 @@ POST http://localhost:3000/track HTTP/1.1
 Content-Type: application/json
 
 {
-    "duration": 10,
-    "referrer": "http://localhost:3000",
+    "duration": 0,
+    "referrer": "test",
+    "page": "/en/test",
     "utm_source": "REST"
 }
 
@@ -12,19 +13,35 @@ x-powered-by: Express
 access-control-allow-origin: *
 content-type: application/json; charset=utf-8
 content-length: 33
-etag: W/"21-gPBqjJtNQPjl6lkFLhZPVda8TTc"
-date: Tue, 22 Apr 2025 09:09:14 GMT
+etag: W/"21-Pjh4aT+eHaz/J2HXKEf+F4rQ720"
+date: Wed, 23 Apr 2025 08:34:48 GMT
 connection: close
 ###
-GET http://localhost:3000/metrics/views?startDate=2025-03-22&endDate=2025-04-22 HTTP/1.1
+POST http://localhost:3000/track/6808a628adcbf3abc4e0f97f HTTP/1.1
+Content-Type: application/json
+
+{
+    "duration": 400
+}
+
+HTTP/1.1 404  - Not Found
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 29
+etag: W/"1d-SFg1yB5C4mPMRmz91HR7SP18WdM"
+date: Wed, 23 Apr 2025 09:30:24 GMT
+connection: close
+###
+GET http://localhost:3000/metrics/views?startDate=2025-03-23&endDate=2025-04-23 HTTP/1.1
 
 HTTP/1.1 200  - OK
 x-powered-by: Express
 access-control-allow-origin: *
 content-type: application/json; charset=utf-8
 content-length: 11
-etag: W/"b-qA97yBec1rrOyf2eVsYdWwFPOso"
-date: Wed, 23 Apr 2025 04:20:54 GMT
+etag: W/"b-hRuIfkAGnfwKvpTzajm4bAWdKxE"
+date: Wed, 23 Apr 2025 07:45:52 GMT
 connection: close
 ###
 POST http://localhost:3000/event HTTP/1.1
@@ -42,4 +59,15 @@ content-type: application/json; charset=utf-8
 content-length: 33
 etag: W/"21-U3gok62QP7+K1eyQnulLkXLKYWQ"
 date: Wed, 23 Apr 2025 04:42:21 GMT
+connection: close
+###
+GET http://localhost:3000/metrics/events?startDate=2025-03-22&endDate=2025-04-22 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 2
+etag: W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"
+date: Wed, 23 Apr 2025 07:30:34 GMT
 connection: close
