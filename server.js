@@ -16,17 +16,21 @@ const client = new MongoClient(uri, {
     }
 });
 
-let db, visitsCollection;
+let db;
+let visitsCollection;
+let eventsCollection;
 
 async function connectDB() {
     try {
         await client.connect();
         db = client.db('metricsTracker');
         visitsCollection = db.collection('visits');
+        eventsCollection = db.collection('events');
         console.log("Connected to MongoDB");
 
         // Create index on timestamp for better query performance
         await visitsCollection.createIndex({ timestamp: 1 });
+        await eventsCollection.createIndex({ timestamp: 1 });
     } catch (err) {
         console.error("MongoDB connection error:", err);
         process.exit(1);
@@ -54,6 +58,23 @@ app.post('/track', async (req, res) => {
         };
 
         const result = await visitsCollection.insertOne(visit);
+        res.json({ id: result.insertedId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Add this new endpoint after the /track endpoint
+app.post('/event', async (req, res) => {
+    try {
+        const { type, value } = req.body;
+        const event = {
+            timestamp: new Date(),
+            type: type || 'unknown',
+            value: value || null
+        };
+
+        const result = await eventsCollection.insertOne(event);
         res.json({ id: result.insertedId });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -181,6 +202,46 @@ app.get('/metrics/sources', async (req, res) => {
 
         const result = await visitsCollection.aggregate(pipeline).toArray();
         res.json(result.map(item => ({ utm_source: item._id, count: item.count })));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Add this new endpoint after the other metrics endpoints
+app.get('/metrics/events', async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const matchStage = {};
+
+        if (startDate || endDate) {
+            matchStage.timestamp = {};
+            if (startDate) matchStage.timestamp.$gte = parseDate(startDate);
+            if (endDate) matchStage.timestamp.$lte = parseDate(endDate, true);
+        }
+
+        const pipeline = [];
+        if (Object.keys(matchStage).length > 0) {
+            pipeline.push({ $match: matchStage });
+        }
+
+        pipeline.push(
+            { $group: { 
+                _id:  {
+                    type: "$type",
+                    value: "$value"
+                },
+                count: { $sum: 1 }
+            }},
+            { $project: {
+                type: "$_id.type",
+                value: "$_id.value",
+                count: 1,
+                _id: 0
+            }}
+        );
+
+        const result = await eventsCollection.aggregate(pipeline).toArray();
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
