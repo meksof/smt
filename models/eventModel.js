@@ -1,4 +1,4 @@
-const { buildDateQuery } = require('../utils/dates');
+const { buildDateQuery } = require('../utils.js');
 
 let eventsCollection;
 

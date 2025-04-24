@@ -1,5 +1,5 @@
 const { ObjectId } = require('mongodb');
-const { buildDateQuery } = require('../utils/dates'); // Assuming you have a utility function for date queries
+const { buildDateQuery } = require('../utils.js'); // Assuming you have a utility function for date queries
 
 let visitsCollection;
 

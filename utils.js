@@ -1,18 +1,18 @@
-function parseDate(dateString, endOfDay = false) {
-    if (!dateString) return null;
-
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-        throw new Error(`Invalid date format: ${dateString}`);
+// Helper function to build date range queries
+module.exports.buildDateQuery = (startDate, endDate) => {
+    const query = {};
+    if (startDate || endDate) {
+        query.timestamp = {};
+        if (startDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            query.timestamp.$gte = start;
+        }
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.timestamp.$lte = end;
+        }
     }
-
-    if (endOfDay) {
-        date.setHours(23, 59, 59, 999);
-    } else {
-        date.setHours(0, 0, 0, 0);
-    }
-
-    return date;
+    return query;
 }
-
-module.exports = { parseDate };
