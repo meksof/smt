@@ -73,5 +73,3 @@ Feel free to fork the repository and submit pull requests for new features or bu
 ## License
 This project is licensed under the MIT License.
 ```
-
-Let me know if you need further adjustments!
