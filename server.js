@@ -1,4 +1,5 @@
 require('dotenv').config();
+const os = require('os');
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -51,6 +52,7 @@ app.use(bodyParser.json()); // for application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for application/x-www-form-urlencoded
 
 // Serve dashboard
+app.use('/dashboard', express.static(path.join(__dirname, 'public')));
 app.get('/dashboard/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -65,8 +67,10 @@ app.use('/event', eventRoutes)
 let server;
 connectDB().then(client => {
     server = app.listen(port, () => {
-        console.log(`Metrics tracker running on http://localhost:${port}`);
-        console.log(`dashboard running on http://localhost:${port}/dashboard`);
+        const hostname = os.hostname(); // Get the machine's hostname
+        const serverUrl = `http://${hostname}:${port}`;
+        console.log(`Metrics tracker running on ${serverUrl}`);
+        console.log(`Dashboard running on ${serverUrl}/dashboard`);;
     });
 });
 
