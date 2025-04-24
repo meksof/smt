@@ -1,6 +1,6 @@
 {
     "name": "smt",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "server.js",
     "description": "smt stands for simple metrics tracker, which is a simple web application that tracks metrics for a given URL. It is built using Node.js, Express, and MongoDB.",
     "scripts": {

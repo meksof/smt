@@ -1,7 +1,12 @@
 # Simple Metrics Tracker (SMT)
 
 ## Project Purpose
-The Simple Metrics Tracker (SMT) is a web application designed to track and analyze metrics for a given URL. It provides insights into user visits, session durations, traffic sources, and custom events. Built using **Node.js**, **Express**, and **MongoDB**, SMT includes a dashboard for visualizing metrics and APIs for tracking and retrieving data.
+The Simple Metrics Tracker (SMT) is a web application designed to track and analyze metrics for a given URL. It provides insights into user visits, current page, session durations, traffic sources, and custom events. Built using **Node.js**, **Express**, and **MongoDB**, SMT includes a dashboard for visualizing metrics and APIs for tracking and retrieving data.
+
+## Tracking
+- **Traffic source**:
+When sharing your website url (ex: https://mywebsite.me/), add an extra param, like so:
+```https://mywebsite.me/?urm_source=linkedin```, where "linkedin" is the source from which users came from.
 
 ---
 
@@ -72,4 +77,4 @@ Feel free to fork the repository and submit pull requests for new features or bu
 
 ## License
 This project is licensed under the MIT License.
-```
+
