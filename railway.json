@@ -1,0 +1,14 @@
+{
+    "buildCommand": "npm install",
+    "startCommand": "node server.js",
+    "variables": {
+        "MONGODB_URI": {
+            "description": "MongoDB connection string",
+            "required": true
+        },
+        "PORT": {
+            "description": "Port to run the server on",
+            "value": "3000"
+        }
+    }
+}

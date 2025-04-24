@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -45,8 +46,11 @@ app.use(cors());
 app.use(bodyParser.json()); // for application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for application/x-www-form-urlencoded
 
-// Dashvoard static files
-app.use('/dashboard', express.static('public'));
+// Serve dashboard
+app.use('/dashboard', express.static(path.join(__dirname, 'public')));
+app.get('/dashboard/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Routes
 app.use('/metrics', metricsRoutes);
