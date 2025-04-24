@@ -14,6 +14,12 @@ const port = process.env.PORT || 3000;
 
 // MongoDB connection
 const uri = process.env.MONGODB_URI;
+console.log("MongoDB URI:", uri); // Log the MongoDB URI for debugging
+if (!uri) {
+    console.error("MongoDB URI is not defined in .env file");
+    process.exit(1);
+}
+
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
