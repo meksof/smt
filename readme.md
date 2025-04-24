@@ -5,10 +5,22 @@ The Simple Metrics Tracker (SMT) is a web application designed to track and anal
 
 ## Tracking
 - **Traffic source**:
+
 When sharing your website url (ex: https://mywebsite.me/), add an extra param, like so:
 ```https://mywebsite.me/?urm_source=linkedin```, where "linkedin" is the source from which users came from.
 
----
+- **Tracking event**:
+
+An event can be a click, hover or any user interaction. Make sure to add a ```type``` and ```value``` to your request body as though:
+```REST
+POST http://localhost:3000/event HTTP/1.1
+Content-Type: application/json
+
+{
+    "type": "click",
+    "value": "CTA"
+}
+````
 
 ## Installation
 
