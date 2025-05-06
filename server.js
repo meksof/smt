@@ -21,14 +21,11 @@ if (!uri) {
     process.exit(1);
 }
 
-const client = new MongoClient(uri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
+const client = new MongoClient(MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 30000,
+    retryWrites: true
 });
-
 
 async function connectDB() {
     try {
@@ -54,7 +51,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // for application/x-www-for
 // Serve dashboard
 app.use('/dashboard', express.static(path.join(__dirname, 'public')));
 app.get('/dashboard/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Routes
