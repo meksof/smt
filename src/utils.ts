@@ -1,6 +1,6 @@
 // Helper function to build date range queries
-module.exports.buildDateQuery = (startDate, endDate) => {
-    const query = {};
+export const buildDateQuery = (startDate?: string, endDate?: string) => {
+    const query: any = {};
     if (startDate || endDate) {
         query.timestamp = {};
         if (startDate) {
@@ -15,4 +15,4 @@ module.exports.buildDateQuery = (startDate, endDate) => {
         }
     }
     return query;
-}
+};

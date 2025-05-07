@@ -1,9 +1,9 @@
-POST https://localhost:3000/track HTTP/1.1
+POST http://localhost:3000/track HTTP/1.1
 Content-Type: application/json
 
 {
     "duration": 0,
-    "referrer": "test",
+    "referrer": "test.me.com",
     "page": "http://mywebsite.local/en/test",
     "utm_source": "REST"
 }
@@ -12,7 +12,7 @@ POST http://localhost:3000/track/6808f4294fc7b90b49e61488 HTTP/1.1
 Content-Type: application/json
 
 {
-    "duration": 400
+    "duration": 44
 }
 ###
 GET http://localhost:3000/metrics/views?startDate=2025-03-23&endDate=2025-04-23 HTTP/1.1
