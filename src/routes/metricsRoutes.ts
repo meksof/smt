@@ -1,6 +1,7 @@
 import express from 'express';
 const router = express.Router();
-import { getTotalViews, getAverageDuration, getTopReferrers, getTrafficSources, getEvents } from '../controllers/metricsController';
+import { getTotalViews, getAverageDuration, getTopReferrers, getTrafficSources } from '../controllers/metricsController';
+import { getEvents } from '../controllers/eventController';
 
 // Get all metrics
 // router.get('/', getMetrics);

@@ -1,18 +1,10 @@
-import { CreateEventDto } from '../models/event';
 import { buildDateQuery } from '../utils';
-
-let eventsCollection: any;
-
-export const init = (db: any) => {
-    eventsCollection = db.collection('events');
-    eventsCollection.createIndex({ timestamp: 1 });
-};
+import { EventModel, Event } from '../models/event';
 
 export const getEvents = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
-    const pipeline = [];
-    pipeline.push({ $match: query });
-    pipeline.push(
+    const result = await EventModel.aggregate([
+        { $match: query },
         {
             $group: {
                 _id: {
@@ -30,13 +22,27 @@ export const getEvents = async (startDate: string, endDate: string) => {
                 _id: 0
             }
         }
-    );
-    const result = await eventsCollection.aggregate(pipeline).toArray();
+    ]);
 
     return result;
 };
 
-export const createEvent = async (event: CreateEventDto) => {
-    const result = await eventsCollection.insertOne(event);
-    return result;
+export const createEvent = async (eventData: Partial<Event>) => {
+    try {
+        const event = new EventModel(eventData);
+        const result = await event.save();
+        return { insertedId: result._id };
+    } catch (err) {
+        console.error('Error creating event:', err);
+        throw err;
+    }
+};
+
+export const getEventsByVisit = async (visitId: string) => {
+    try {
+        return await EventModel.find({ visit: visitId }).populate('visit');
+    } catch (err) {
+        console.error('Error getting events by visit:', err);
+        throw err;
+    }
 };

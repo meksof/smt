@@ -1,28 +1,11 @@
-import { Db, ObjectId } from 'mongodb';
 import { buildDateQuery } from '../utils';
-import { CreateVisitDto, UpdateVisitDto } from '../models/visit';
+import { VisitModel, Visit, CreateVisitDto, UpdateVisitDto } from '../models/visit';
 
-let visitsCollection: any;
-
-export const init = (db: Db) => {
-    visitsCollection = db.collection('visits');
-    // Create indexes for better query performance
-    visitsCollection.createIndex({ timestamp: 1 });
-};
-
-export const createVisit = async (visit: CreateVisitDto) => {
+export const createVisit = async (visitData: CreateVisitDto) => {
     try {
-        // Ensure required fields with defaults
-        const createVisit: CreateVisitDto = {
-            timestamp: visit.timestamp || new Date(),
-            duration: visit.duration || 0,
-            referrer: visit.referrer || '(direct)',
-            page: visit.page,
-            utm_source: visit.utm_source || null
-        };
-
-        const result = await visitsCollection.insertOne(createVisit);
-        return result;
+        const visit = new VisitModel(visitData);
+        const result = await visit.save();
+        return { insertedId: result._id };
     } catch (err) {
         console.error('Error creating visit:', err);
         throw err;
@@ -31,64 +14,93 @@ export const createVisit = async (visit: CreateVisitDto) => {
 
 export const updateVisitDuration = async (visit: UpdateVisitDto) => {
     try {
-        // Validate and convert ID
-        if (!ObjectId.isValid(visit.id)) {
-            throw new Error('Invalid visit ID format');
-        }
-
-        const objectId = new ObjectId(visit.id);
-        const duration = parseInt(visit.duration.toString());
-
-        if (isNaN(duration)) {
-            throw new Error('Invalid duration value');
-        }
-
-        const result = await visitsCollection.updateOne(
-            { _id: objectId },
-            { $set: { duration: duration } }
+        const result = await VisitModel.findByIdAndUpdate(
+            visit.id,
+            { $set: { duration: visit.duration } },
+            { new: true, runValidators: true }
         );
 
-        return result;
+        if (!result) {
+            throw new Error('Visit not found');
+        }
+
+        return { matchedCount: 1, modifiedCount: 1 };
     } catch (err) {
+        console.error('Error updating visit duration:', err);
         throw err;
     }
 };
 
 export const countVisits = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
-    return await visitsCollection.countDocuments(query);
+    return await VisitModel.countDocuments(query);
 };
 
 export const getAverageDuration = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
-    const result = await visitsCollection.aggregate([
+    const result = await VisitModel.aggregate([
         { $match: query },
-        { $group: { _id: null, avgDuration: { $avg: "$duration" } } }
-    ]).toArray();
+        { 
+            $group: { 
+                _id: null, 
+                avgDuration: { $avg: "$duration" } 
+            } 
+        }
+    ]);
 
     return { avgDuration: result[0]?.avgDuration || 0 };
 };
 
 export const getTopReferrers = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
-    const result = await visitsCollection.aggregate([
+    const result = await VisitModel.aggregate([
         { $match: query },
-        { $group: { _id: "$referrer", count: { $sum: 1 } } },
+        { 
+            $group: { 
+                _id: "$referrer", 
+                count: { $sum: 1 } 
+            } 
+        },
         { $sort: { count: -1 } }
-    ]).toArray();
+    ]);
 
-    return result.map((item: { _id: string; count: number }) => ({ referrer: item._id, count: item.count }));
+    return result.map(item => ({ 
+        referrer: item._id, 
+        count: item.count 
+    }));
 };
 
 export const getTrafficSources = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
     query.utm_source = { $ne: null };
 
-    const result = await visitsCollection.aggregate([
+    const result = await VisitModel.aggregate([
         { $match: query },
-        { $group: { _id: "$utm_source", count: { $sum: 1 } } },
+        { 
+            $group: { 
+                _id: "$utm_source", 
+                count: { $sum: 1 } 
+            } 
+        },
         { $sort: { count: -1 } }
-    ]).toArray();
+    ]);
 
-    return result.map((item: { _id: string; count: number }) => ({ utm_source: item._id, count: item.count }));
+    return result.map(item => ({ 
+        utm_source: item._id, 
+        count: item.count 
+    }));
+};
+
+// New methods utilizing Mongoose features
+
+export const getVisitById = async (id: string) => {
+    return await VisitModel.findById(id).exec();
+};
+
+export const getVisitsWithEvents = async (startDate: string, endDate: string) => {
+    const query = buildDateQuery(startDate, endDate);
+    return await VisitModel.find(query)
+        .populate('events')
+        .sort({ timestamp: -1 })
+        .exec();
 };

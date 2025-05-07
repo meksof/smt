@@ -5,39 +5,56 @@ import express, { Application, Request, Response } from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 
 import metricsRoutes from './routes/metricsRoutes';
 import trackRoutes from './routes/trackRoutes';
 import eventRoutes from './routes/eventRoutes';
+import { VisitModel } from './models/visit';
+import { EventModel } from './models/event';
 
 const app: Application = express();
 const port: number = parseInt(process.env.PORT || '3000', 10);
 
 // MongoDB connection
-const uri: string | undefined = process.env.MONGODB_URI;
+const uri: string = process.env.MONGODB_URI || 'mongodb://localhost:27017/metrics-tracker';
 console.log("MongoDB URI:", uri); // Log the MongoDB URI for debugging
 if (!uri) {
     console.error("MongoDB URI is not defined in .env file");
     process.exit(1);
 }
 
-const client = new MongoClient(uri, {
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 30000,
-    retryWrites: true
-});
-
-async function connectDB(): Promise<MongoClient> {
+async function connectDB(): Promise<void> {
     try {
-        await client.connect();
-        const db = client.db('metricsTracker');
-        // Initialize models with db connection
-        (await import('./repositories/visitRepository')).init(db);
-        (await import('./repositories/eventRepository')).init(db);
-        console.log("Connected to MongoDB");
+        // Configure mongoose
+        mongoose.set('strictQuery', true);
+        
+        // Connect to MongoDB
+        await mongoose.connect(uri, {
+            autoCreate: true, // Create collections automatically
+            autoIndex: true, // Create indexes automatically
+        });
 
-        return client;
+        // Initialize models and create indexes
+        await Promise.all([
+            VisitModel.createIndexes(),
+            EventModel.createIndexes()
+        ]);
+
+        // Log successful connection and initialized collections
+        const collections = await mongoose.connection.db?.collections();
+        console.log('Connected to MongoDB');
+        console.log('Collections initialized:', collections?.map(c => c.collectionName));
+
+        // Handle connection errors
+        mongoose.connection.on('error', (err) => {
+            console.error('MongoDB connection error:', err);
+        });
+
+        mongoose.connection.on('disconnected', () => {
+            console.log('MongoDB disconnected');
+        });
+
     } catch (err) {
         console.error("MongoDB connection error:", err);
         process.exit(1);
@@ -62,7 +79,7 @@ app.use('/event', eventRoutes);
 
 // Start server
 let server: ReturnType<Application['listen']>;
-connectDB().then(client => {
+connectDB().then(() => {
     server = app.listen(port, () => {
         const hostname: string = os.hostname(); // Get the machine's hostname
         const serverUrl: string = `http://${hostname}:${port}`;
@@ -73,7 +90,7 @@ connectDB().then(client => {
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-    await client.close();
+    await mongoose.connection.close();
     server.close(() => {
         console.log('Server closed');
         process.exit(0);

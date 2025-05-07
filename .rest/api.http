@@ -3,17 +3,35 @@ Content-Type: application/json
 
 {
     "duration": 0,
-    "referrer": "test.me.com",
+    "referrer": "test",
     "page": "http://mywebsite.local/en/test",
     "utm_source": "REST"
 }
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 33
+etag: W/"21-NFNZxwxJQKBRndeDiXPCjvWWc/w"
+date: Wed, 07 May 2025 13:05:27 GMT
+connection: close
 ###
-POST http://localhost:3000/track/6808f4294fc7b90b49e61488 HTTP/1.1
+POST http://localhost:3000/track/681b5a97cb07f5ea2ae58052 HTTP/1.1
 Content-Type: application/json
 
 {
-    "duration": 44
+    "duration": 400
 }
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 16
+etag: W/"10-oV4hJxRVSENxc/wX8+mA4/Pe4tA"
+date: Wed, 07 May 2025 13:05:37 GMT
+connection: close
 ###
 GET http://localhost:3000/metrics/views?startDate=2025-03-23&endDate=2025-04-23 HTTP/1.1
 ###
@@ -21,8 +39,27 @@ POST http://localhost:3000/event HTTP/1.1
 Content-Type: application/json
 
 {
-    "type": "rest",
-    "value": "CTA_userCard"
+    "type": "click",
+    "value": "REST_test_attach_visit",
+    "visitId": "681b5a97cb07f5ea2ae58052"
 }
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 33
+etag: W/"21-KayWb8ELf6Jsjugn5aW0I1zugfY"
+date: Wed, 07 May 2025 13:06:08 GMT
+connection: close
 ###
-GET http://localhost:3000/metrics/events?startDate=2025-03-22&endDate=2025-04-23 HTTP/1.1
+GET http://localhost:3000/metrics/events?startDate=2025-03-22&endDate=2025-05-17 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 61
+etag: W/"3d-8kpPaJTd4BMROpxhkzbzKRex3hE"
+date: Wed, 07 May 2025 13:17:42 GMT
+connection: close
