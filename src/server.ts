@@ -50,9 +50,9 @@ app.use(bodyParser.json()); // for application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for application/x-www-form-urlencoded
 
 // Serve dashboard
-app.use('/dashboard', express.static(path.join(__dirname, 'public')));
+app.use('/dashboard', express.static(path.join(__dirname, '../public')));
 app.get('/dashboard/*', (req: Request, res: Response) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
 // Routes
