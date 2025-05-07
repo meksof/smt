@@ -1,6 +1,8 @@
-const eventModel = require('../models/eventModel');
+import { Request, Response } from 'express';
+import { CreateEventDto } from '../models/event';
+import * as eventModel from '../repositories/eventRepository';
 
-exports.createEvent = async (req, res) => {
+export const createEvent = async (req: Request, res: Response) => {
     try {
         const { type, value } = req.body;
 
@@ -8,7 +10,7 @@ exports.createEvent = async (req, res) => {
             return res.status(400).json({ error: 'Type and value are required' });
         }
 
-        const event = {
+        const event: CreateEventDto = {
             type,
             value,
             timestamp: new Date()
@@ -17,6 +19,7 @@ exports.createEvent = async (req, res) => {
         const result = await eventModel.createEvent(event);
         res.json({ id: result.insertedId });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        const error = err as Error;
+        res.status(500).json({ error: error.message });
     }
-}
+};

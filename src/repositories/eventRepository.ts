@@ -1,16 +1,14 @@
-const { buildDateQuery } = require('../utils.js');
+import { CreateEventDto } from '../models/event';
+import { buildDateQuery } from '../utils';
 
-let eventsCollection;
+let eventsCollection: any;
 
-module.exports.init = (db) => {
+export const init = (db: any) => {
     eventsCollection = db.collection('events');
     eventsCollection.createIndex({ timestamp: 1 });
-    eventsCollection.createIndex({ type: 1 });
-    eventsCollection.createIndex({ value: 1 });
 };
 
-module.exports.getEvents = async (startDate, endDate) => {
-
+export const getEvents = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
     const pipeline = [];
     pipeline.push({ $match: query });
@@ -35,10 +33,10 @@ module.exports.getEvents = async (startDate, endDate) => {
     );
     const result = await eventsCollection.aggregate(pipeline).toArray();
 
-    return result
-}
+    return result;
+};
 
-module.exports.createEvent = async (event) => {
+export const createEvent = async (event: CreateEventDto) => {
     const result = await eventsCollection.insertOne(event);
     return result;
 };
