@@ -11,6 +11,7 @@ When sharing your website url (ex: https://mywebsite.me/), add an extra param, l
 
 - **Tracking event**:
 
+The event is an important concept. When we track event we track a user action. And Action is an important metric in the analytics world. It will determine your users' engagement.
 An event can be a click, hover or any user interaction. Make sure to add a ```type``` and ```value``` to your request body as though:
 ```REST
 POST http://localhost:3000/event HTTP/1.1
