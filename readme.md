@@ -71,7 +71,7 @@ Content-Type: application/json
 
 ## What to Do Next
 1. **Use TypeScript Instead of JavaScript**:
-    - [ ] Migrate the codebase to TypeScript for better type safety and maintainability.
+    - [x] Migrate the codebase to TypeScript for better type safety and maintainability.
 
 2. **Enhance Dashboard**:
     - [ ] Add a new page to display detailed data for each visit, including referrer, session duration, and traffic source.
