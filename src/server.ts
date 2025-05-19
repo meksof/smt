@@ -33,6 +33,7 @@ async function connectDB(): Promise<void> {
         await mongoose.connect(uri, {
             autoCreate: true, // Create collections automatically
             autoIndex: true, // Create indexes automatically
+            dbName: 'metricsTracker', // Specify the database name
         });
 
         // Initialize models and create indexes
