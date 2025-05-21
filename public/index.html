@@ -59,9 +59,42 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
+        
         button:hover {
             background-color: #45a049;
+        }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            right: calc(50% - 8px);
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: translateY(-50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
+
+        #applyFilters {
+            position: relative;
+            min-width: 104px;
+        }
+
+        #applyFilters:disabled {
+            cursor: not-allowed;
         }
 
         .metrics-container {
@@ -118,7 +151,6 @@
 <body>
     <div class="dashboard">
         <h1>Metrics Dashboard</h1>
-
         <div class="filters">
             <div class="filter-group">
                 <label for="timeRange">Time Range:</label>
@@ -138,7 +170,9 @@
                 <input type="date" id="endDate">
             </div>
 
-            <button id="applyFilters">Apply Filters</button>
+            <button id="applyFilters">
+                <span class="btn-text">Apply Filters</span> &nbsp;<span class="spinner"></span>
+            </button>
         </div>
 
         <div class="metrics-container">
@@ -221,48 +255,68 @@
             loadMetrics();
 
             // Function to load metrics based on filters
-            function loadMetrics() {
-                const timeRange = timeRangeSelect.value;
-                let startDate, endDate;
+            async function loadMetrics() {
+                const spinner = document.querySelector('#applyFilters .spinner');
+                const buttonText = document.querySelector('#applyFilters .btn-text');
+                const applyButton = document.getElementById('applyFilters');
+                
+                spinner.style.display = 'block';
+                buttonText.textContent = '';
+                applyButton.disabled = true;
+                
+                try {
+                    const timeRange = timeRangeSelect.value;
+                    let startDate, endDate;
 
-                const now = new Date();
-                endDate = formatDate(now);
+                    const now = new Date();
+                    endDate = formatDate(now);
 
-                switch (timeRange) {
-                    case 'today':
-                        startDate = formatDate(now);
-                        break;
-                    case 'week':
-                        const weekAgo = new Date(now);
-                        weekAgo.setDate(now.getDate() - 7);
-                        startDate = formatDate(weekAgo);
-                        break;
-                    case 'month':
-                        const monthAgo = new Date(now);
-                        monthAgo.setMonth(now.getMonth() - 1);
-                        startDate = formatDate(monthAgo);
-                        break;
-                    case 'year':
-                        const yearAgo = new Date(now);
-                        yearAgo.setFullYear(now.getFullYear() - 1);
-                        startDate = formatDate(yearAgo);
-                        break;
-                    case 'custom':
-                        startDate = document.getElementById('startDate').value;
-                        endDate = document.getElementById('endDate').value;
-                        if (!startDate || !endDate) {
-                            alert('Please select both start and end dates');
-                            return;
-                        }
-                        break;
+                    switch (timeRange) {
+                        case 'today':
+                            startDate = formatDate(now);
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(now);
+                            weekAgo.setDate(now.getDate() - 7);
+                            startDate = formatDate(weekAgo);
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(now);
+                            monthAgo.setMonth(now.getMonth() - 1);
+                            startDate = formatDate(monthAgo);
+                            break;
+                        case 'year':
+                            const yearAgo = new Date(now);
+                            yearAgo.setFullYear(now.getFullYear() - 1);
+                            startDate = formatDate(yearAgo);
+                            break;
+                        case 'custom':
+                            startDate = document.getElementById('startDate').value;
+                            endDate = document.getElementById('endDate').value;
+                            if (!startDate || !endDate) {
+                                alert('Please select both start and end dates');
+                                return;
+                            }
+                            break;
+                    }
+
+                    // Load all metrics
+                    await Promise.all([
+                        loadTotalViews(startDate, endDate),
+                        loadAvgDuration(startDate, endDate),
+                        loadReferrers(startDate, endDate),
+                        loadSources(startDate, endDate),
+                        loadEvents(startDate, endDate)
+                    ]);
+
+                    // Here the code was not awaiting for the fetch calls to complete
+                } catch (error) {
+                    console.error('Error loading metrics:', error);
+                } finally {
+                    spinner.style.display = 'none';
+                    buttonText.textContent = 'Apply Filters';
+                    applyButton.disabled = false;
                 }
-
-                // Load all metrics
-                loadTotalViews(startDate, endDate);
-                loadAvgDuration(startDate, endDate);
-                loadReferrers(startDate, endDate);
-                loadSources(startDate, endDate);
-                loadEvents(startDate, endDate);
             }
 
             function formatDate(date) {
@@ -270,12 +324,11 @@
             }
 
             function loadEvents(startDate, endDate) {
-                fetch(`${smtServerUrl}/metrics/events?startDate=${startDate}&endDate=${endDate}`)
+                return fetch(`${smtServerUrl}/metrics/events?startDate=${startDate}&endDate=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
                         const tbody = document.querySelector('#eventsTable tbody');
                         tbody.innerHTML = '';
-
                         data.forEach(item => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
@@ -285,65 +338,58 @@
                         `;
                             tbody.appendChild(row);
                         });
-                    })
-                    .catch(error => console.error('Error loading events:', error));
+                    });
             }
 
             function loadTotalViews(startDate, endDate) {
-                fetch(`${smtServerUrl}/metrics/views?startDate=${startDate}&endDate=${endDate}`)
+                return fetch(`${smtServerUrl}/metrics/views?startDate=${startDate}&endDate=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById('totalViews').textContent = data.count;
-                    })
-                    .catch(error => console.error('Error loading total views:', error));
+                    });
             }
 
             function loadAvgDuration(startDate, endDate) {
-                fetch(`${smtServerUrl}/metrics/sessions?startDate=${startDate}&endDate=${endDate}`)
+                return fetch(`${smtServerUrl}/metrics/sessions?startDate=${startDate}&endDate=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
                         const avgSeconds = Math.round(data.avgDuration || 0);
                         document.getElementById('avgDuration').textContent = `${avgSeconds}s`;
-                    })
-                    .catch(error => console.error('Error loading average duration:', error));
+                    });
             }
 
             function loadReferrers(startDate, endDate) {
-                fetch(`${smtServerUrl}/metrics/referrers?startDate=${startDate}&endDate=${endDate}`)
+                return fetch(`${smtServerUrl}/metrics/referrers?startDate=${startDate}&endDate=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
                         const tbody = document.querySelector('#referrersTable tbody');
                         tbody.innerHTML = '';
-
                         data.forEach(item => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
-                <td>${item.referrer || '(direct)'}</td>
-                <td>${item.count}</td>
-              `;
+                                <td>${item.referrer || '(direct)'}</td>
+                                <td>${item.count}</td>
+                            `;
                             tbody.appendChild(row);
                         });
-                    })
-                    .catch(error => console.error('Error loading referrers:', error));
+                    });
             }
 
             function loadSources(startDate, endDate) {
-                fetch(`${smtServerUrl}/metrics/sources?startDate=${startDate}&endDate=${endDate}`)
+                return fetch(`${smtServerUrl}/metrics/sources?startDate=${startDate}&endDate=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
                         const tbody = document.querySelector('#sourcesTable tbody');
                         tbody.innerHTML = '';
-
                         data.forEach(item => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
-                <td>${item.utm_source}</td>
-                <td>${item.count}</td>
-              `;
+                                <td>${item.utm_source}</td>
+                                <td>${item.count}</td>
+                            `;
                             tbody.appendChild(row);
                         });
-                    })
-                    .catch(error => console.error('Error loading sources:', error));
+                    });
             }
         });
     </script>
