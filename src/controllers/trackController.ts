@@ -11,11 +11,12 @@ export const createVisit = async (req: Request, res: Response) => {
             duration: duration || 0,
             referrer: referrer || '(direct)',
             page: page || null,
-            utm_source: utm_source || null
+            utm_source: utm_source || null,
+            sessionId: req.body.sessionId ?? undefined
         };
 
         const result = await visitModel.createVisit(visit);
-        res.json({ id: result.insertedId });
+        res.json({ id: result.insertedId, sessionId: result.sessionId });
     } catch (err) {
         const error = err as Error;
         res.status(500).json({ error: error.message });

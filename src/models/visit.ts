@@ -1,7 +1,9 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model, Document, Types, Model } from 'mongoose';
 import { Event } from './event';
+import { toObjectId } from '../repositories/sessionRepository';
 
 export interface CreateVisitDto {
+    sessionId?: string;
     timestamp: Date;
     duration: number;
     referrer: string;
@@ -15,6 +17,7 @@ export interface UpdateVisitDto {
 }
 
 export interface Visit extends Document {
+    sessionId?: Types.ObjectId;
     timestamp: Date;
     duration: number;
     referrer: string;
@@ -25,7 +28,19 @@ export interface Visit extends Document {
     updatedAt: Date;
 }
 
-const visitSchema = new Schema<Visit>({
+const visitSchema = new Schema<Visit>({    
+    sessionId: { 
+        type: Schema.Types.ObjectId,
+        ref: 'Session',
+        index: true,
+        sparse: true,
+        validate: {
+            validator: function(v: Types.ObjectId) {
+                return Types.ObjectId.isValid(v);
+            },
+            message: 'Invalid ObjectId'
+        }
+    },
     timestamp: { 
         type: Date, 
         required: true,
@@ -80,6 +95,8 @@ visitSchema.virtual('events', {
 // Compound indexes for common queries
 visitSchema.index({ timestamp: 1, referrer: 1 });
 visitSchema.index({ timestamp: 1, utm_source: 1 });
+// Add compound index for sessionId and timestamp
+visitSchema.index({ sessionId: 1, timestamp: 1 });
 
 // Instance methods
 visitSchema.methods.updateDuration = async function(duration: number) {
@@ -87,13 +104,19 @@ visitSchema.methods.updateDuration = async function(duration: number) {
     return await this.save();
 };
 
-// Static methods
-visitSchema.statics.findByPage = async function(page: string) {
-    return await this.find({ page }).exec();
-};
+// Static methods interface
+interface VisitModel extends Model<Visit> {
+    findBySessionId(sessionId: string | Types.ObjectId): Promise<Visit[]>;
+}
 
-visitSchema.statics.findByReferrer = async function(referrer: string) {
-    return await this.find({ referrer }).exec();
+// Static methods
+visitSchema.statics.findBySessionId = async function(sessionId: string | Types.ObjectId): Promise<Visit[]> {
+    if (typeof sessionId === 'string') {
+        sessionId = toObjectId(sessionId);
+    }
+    return this.find({ sessionId })
+        .sort({ timestamp: 1 })
+        .populate('events');
 };
 
 // Middleware
@@ -105,4 +128,5 @@ visitSchema.pre('save', function(next) {
     next();
 });
 
-export const VisitModel = model<Visit>('Visit', visitSchema);
+// Export model with static methods
+export const VisitModel = model<Visit, VisitModel>('Visit', visitSchema);

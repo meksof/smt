@@ -4,6 +4,7 @@ import { Visit } from './visit';
 export type CreateEventDto = Pick<Event, 'type'|'value'| 'visit'>
 
 export interface Event extends Document {
+    _id: Types.ObjectId;
     type: string;
     value: string;
     timestamp: Date;
@@ -13,6 +14,11 @@ export interface Event extends Document {
 }
 
 const eventSchema = new Schema<Event>({
+    _id: {
+        type: Schema.Types.ObjectId,
+        default: () => new Types.ObjectId(),
+        required: true
+    },
     type: {
         type: String,
         required: true,
@@ -45,5 +51,10 @@ eventSchema.pre('save', function(next) {
     }
     next();
 });
+
+// Create proper indexes
+eventSchema.index({ type: 1 });
+eventSchema.index({ visit: 1 });
+eventSchema.index({ timestamp: 1 });
 
 export const EventModel = model<Event>('Event', eventSchema);

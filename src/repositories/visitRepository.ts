@@ -1,11 +1,19 @@
 import { buildDateQuery } from '../utils';
 import { VisitModel, Visit, CreateVisitDto, UpdateVisitDto } from '../models/visit';
+import { getOrCreateSession } from './sessionRepository';
+import { Session } from '../models/session';
 
-export const createVisit = async (visitData: CreateVisitDto) => {
-    try {
-        const visit = new VisitModel(visitData);
+export const createVisit = async (visitData: CreateVisitDto) => {    try {
+        // Get or create session ID
+        const session: Session = await getOrCreateSession(visitData.sessionId);
+        
+        // Create visit with session ID
+        const visit = new VisitModel({
+            ...visitData,
+            sessionId: session._id  // Use _id instead of id
+        });
         const result = await visit.save();
-        return { insertedId: result._id };
+        return { insertedId: result._id, sessionId: session._id };
     } catch (err) {
         console.error('Error creating visit:', err);
         throw err;
@@ -103,4 +111,13 @@ export const getVisitsWithEvents = async (startDate: string, endDate: string) =>
         .populate('events')
         .sort({ timestamp: -1 })
         .exec();
+};
+
+export const getVisitsBySessionId = async (sessionId: string) => {
+    try {
+        return await VisitModel.findBySessionId(sessionId);
+    } catch (err) {
+        console.error('Error finding visits by session ID:', err);
+        throw err;
+    }
 };

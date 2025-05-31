@@ -10,8 +10,10 @@ import mongoose from 'mongoose';
 import metricsRoutes from './routes/metricsRoutes';
 import trackRoutes from './routes/trackRoutes';
 import eventRoutes from './routes/eventRoutes';
+import sessionRoutes from './routes/sessionRoutes';
 import { VisitModel } from './models/visit';
 import { EventModel } from './models/event';
+import { SessionModel } from './models/session';
 
 const app: Application = express();
 const port: number = parseInt(process.env.PORT || '3000', 10);
@@ -33,13 +35,14 @@ async function connectDB(): Promise<void> {
         await mongoose.connect(uri, {
             autoCreate: true, // Create collections automatically
             autoIndex: true, // Create indexes automatically
-            dbName: 'metricsTracker', // Specify the database name
+            dbName: process.env.MONGODB_DB_NAME, // Specify the database name
         });
 
         // Initialize models and create indexes
         await Promise.all([
             VisitModel.createIndexes(),
-            EventModel.createIndexes()
+            EventModel.createIndexes(),
+            SessionModel.createIndexes()
         ]);
 
         // Log successful connection and initialized collections
@@ -77,6 +80,7 @@ app.get('/dashboard/*', (req: Request, res: Response) => {
 app.use('/metrics', metricsRoutes);
 app.use('/track', trackRoutes);
 app.use('/event', eventRoutes);
+app.use('/session', sessionRoutes);
 
 // Start server
 let server: ReturnType<Application['listen']>;
