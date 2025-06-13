@@ -2,7 +2,7 @@ import { buildDateQuery } from '../utils';
 import { EventModel, Event } from '../models/event';
 
 export const getEvents = async (startDate: string, endDate: string) => {
-    const query = buildDateQuery(startDate, endDate);
+    const query = buildDateQuery(startDate, endDate, 'timestamp');
     const result = await EventModel.aggregate([
         { $match: query },
         {

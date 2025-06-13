@@ -1,7 +1,7 @@
-import { getVisits } from "../controllers/sessionController";
+import { getSession, getSessions } from "../controllers/sessionController";
 
 const router = require('express').Router();
 
-router.get('/:id', getVisits)
-
+router.get('/:id', getSession)
+router.get('/', getSessions)
 export default router;

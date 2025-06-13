@@ -1,0 +1,39 @@
+# Metrics - Get all visits
+GET http://localhost:3000/metrics/views?startDate=2025-06-01&endDate=2025-06-25 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 16
+etag: W/"10-GAe2nbMoYZOggCAzbwM3MY/pBSU"
+date: Fri, 13 Jun 2025 16:27:41 GMT
+connection: close
+###
+# get traffic sources
+GET http://localhost:3000/metrics/sources?startDate=2025-06-02&endDate=2025-06-03 HTTP/1.1
+# get top referrers
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 2
+etag: W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"
+date: Wed, 04 Jun 2025 08:45:00 GMT
+connection: close
+###
+# get all events
+GET http://localhost:3000/metrics/events?startDate=2025-06-02&endDate=2025-06-03 HTTP/1.1
+###
+# Metrics - Get average session duration
+GET http://localhost:3000/metrics/sessions/average?startDate=2025-06-03&endDate=2025-06-03 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 38
+etag: W/"26-9Q4ntR6Px1cokVUPzRXYTqpvq38"
+date: Fri, 13 Jun 2025 15:23:58 GMT
+connection: close

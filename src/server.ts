@@ -11,10 +11,10 @@ import metricsRoutes from './routes/metricsRoutes';
 import trackRoutes from './routes/trackRoutes';
 import eventRoutes from './routes/eventRoutes';
 import sessionRoutes from './routes/sessionRoutes';
+import visitRoutes from './routes/visitRoutes';
 import { VisitModel } from './models/visit';
 import { EventModel } from './models/event';
 import { SessionModel } from './models/session';
-
 const app: Application = express();
 const port: number = parseInt(process.env.PORT || '3000', 10);
 
@@ -79,6 +79,7 @@ app.get('/dashboard/*', (req: Request, res: Response) => {
 // Routes
 app.use('/metrics', metricsRoutes);
 app.use('/track', trackRoutes);
+app.use('/visit', visitRoutes);
 app.use('/event', eventRoutes);
 app.use('/session', sessionRoutes);
 

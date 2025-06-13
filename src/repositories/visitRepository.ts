@@ -1,4 +1,4 @@
-import { buildDateQuery } from '../utils';
+import { buildDateQuery, timestampMillisecondsToDate } from '../utils';
 import { VisitModel, Visit, CreateVisitDto, UpdateVisitDto } from '../models/visit';
 import { getOrCreateSession } from './sessionRepository';
 import { Session } from '../models/session';
@@ -24,15 +24,22 @@ export const updateVisitDuration = async (visit: UpdateVisitDto) => {
     try {
         const result = await VisitModel.findByIdAndUpdate(
             visit.id,
-            { $set: { duration: visit.duration } },
+            { $set: { clientUpdatedAt: timestampMillisecondsToDate(visit.updateTimestamp) } },
             { new: true, runValidators: true }
         );
+
+        // update visit duration
+        if (result) {
+            const duration = result.clientUpdatedAt.getTime() - result.clientCreatedAt.getTime();
+            result.duration = duration; // Update the duration field
+            await result.save(); // Save the updated visit
+        }
 
         if (!result) {
             throw new Error('Visit not found');
         }
 
-        return { matchedCount: 1, modifiedCount: 1 };
+        return result;
     } catch (err) {
         console.error('Error updating visit duration:', err);
         throw err;
@@ -42,21 +49,6 @@ export const updateVisitDuration = async (visit: UpdateVisitDto) => {
 export const countVisits = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
     return await VisitModel.countDocuments(query);
-};
-
-export const getAverageDuration = async (startDate: string, endDate: string) => {
-    const query = buildDateQuery(startDate, endDate);
-    const result = await VisitModel.aggregate([
-        { $match: query },
-        { 
-            $group: { 
-                _id: null, 
-                avgDuration: { $avg: "$duration" } 
-            } 
-        }
-    ]);
-
-    return { avgDuration: result[0]?.avgDuration || 0 };
 };
 
 export const getTopReferrers = async (startDate: string, endDate: string) => {
@@ -97,12 +89,6 @@ export const getTrafficSources = async (startDate: string, endDate: string) => {
         utm_source: item._id, 
         count: item.count 
     }));
-};
-
-// New methods utilizing Mongoose features
-
-export const getVisitById = async (id: string) => {
-    return await VisitModel.findById(id).exec();
 };
 
 export const getVisitsWithEvents = async (startDate: string, endDate: string) => {

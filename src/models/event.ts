@@ -18,11 +18,10 @@ const eventSchema = new Schema<Event>({
         type: Schema.Types.ObjectId,
         default: () => new Types.ObjectId(),
         required: true
-    },
+    },    
     type: {
         type: String,
-        required: true,
-        index: true
+        required: true
     },
     value: {
         type: String,

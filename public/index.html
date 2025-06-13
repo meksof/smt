@@ -177,7 +177,7 @@
 
         <div class="metrics-container">
             <div class="metric-card">
-                <h2 class="metric-title">Total Views</h2>
+                <h2 class="metric-title">Page Views</h2>
                 <div class="metric-value" id="totalViews">0</div>
                 <div id="viewsTrend"></div>
             </div>
@@ -345,16 +345,21 @@
                 return fetch(`${smtServerUrl}/metrics/views?startDate=${startDate}&endDate=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
-                        document.getElementById('totalViews').textContent = data.count;
+                        document.getElementById('totalViews').textContent = data.totalViews;
                     });
             }
 
             function loadAvgDuration(startDate, endDate) {
-                return fetch(`${smtServerUrl}/metrics/sessions?startDate=${startDate}&endDate=${endDate}`)
+                return fetch(`${smtServerUrl}/metrics/sessions/average?startDate=${startDate}&endDate=${endDate}`)
                     .then(response => response.json())
                     .then(data => {
-                        const avgSeconds = Math.round(data.avgDuration || 0);
-                        document.getElementById('avgDuration').textContent = `${avgSeconds}s`;
+                        const avgSeconds = Math.round(data.averageDuration || 0);
+                        const toHumanReadable = (seconds) => {  
+                            const minutes = Math.floor(seconds / 60);
+                            const remainingSeconds = seconds % 60;
+                            return `${minutes}m ${remainingSeconds}s`;
+                        }
+                        document.getElementById('avgDuration').textContent = toHumanReadable(avgSeconds);
                     });
             }
 
@@ -384,7 +389,7 @@
                         data.forEach(item => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
-                                <td>${item.utm_source}</td>
+                                <td>${item.utmSource}</td>
                                 <td>${item.count}</td>
                             `;
                             tbody.appendChild(row);

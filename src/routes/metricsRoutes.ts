@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getTotalViews, getAverageDuration, getTopReferrers, getTrafficSources } from '../controllers/metricsController';
+import { getTotalViews, getAverageSessionsDuration, getTopReferrers, getTrafficSources } from '../controllers/metricsController';
 import { getEvents } from '../controllers/eventController';
 
 // Get all metrics
@@ -10,7 +10,7 @@ import { getEvents } from '../controllers/eventController';
 router.get('/views', getTotalViews);
 
 // Average session duration
-router.get('/sessions', getAverageDuration);
+router.get('/sessions/average', getAverageSessionsDuration);
 
 // Top referrers
 router.get('/referrers', getTopReferrers);

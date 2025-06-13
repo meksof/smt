@@ -1,6 +1,9 @@
 import express from 'express';
+import multer from 'multer';
 const router = express.Router();
-import { createVisit, updateVisit } from '../controllers/trackController';
+import { createVisit, updateVisit } from '../controllers/visitController';
+
+const upload = multer();
 
 // Create new visit
 router.post('/', async (req, res, next) => {
@@ -17,8 +20,14 @@ router.post('/', async (req, res, next) => {
  * which only allows sending data using POST method.
  * see: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon
  */
-router.post('/:id', async (req, res, next) => {
+// use body parser to handle multipart/form-data
+router.post('/:id', upload.none(), async (req, res, next) => {
     try {
+        // Convert form field names to match JSON format
+        if (req.body.update_timestamp) {
+            req.body.updateTimestamp = parseInt(req.body.update_timestamp);
+            delete req.body.update_timestamp;
+        }
         await updateVisit(req, res);
     } catch (err) {
         next(err);

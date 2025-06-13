@@ -1,0 +1,28 @@
+{
+  "visits": [
+    {
+      "_id": "683eb932a23cf1932af96338",
+      "clientCreatedAt": "2025-06-01T12:00:00.000Z",
+      "duration": 1000,
+      "referrer": "google.com",
+      "page": "/home",
+      "utm_source": "newsletter"
+    },
+    {
+      "_id": "683eb932a23cf1932af96339",
+      "clientCreatedAt": "2025-06-15T15:30:00.000Z",
+      "duration": 2000,
+      "referrer": "twitter.com",
+      "page": "/products",
+      "utm_source": "social"
+    },
+    {
+      "_id": "683eb932a23cf1932af96340",
+      "clientCreatedAt": "2025-06-20T09:45:00.000Z",
+      "duration": 1500,
+      "referrer": "facebook.com",
+      "page": "/about",
+      "utm_source": "social"
+    }
+  ]
+}

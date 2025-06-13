@@ -1,31 +1,33 @@
 import { Schema, model, Document, Types, Model } from 'mongoose';
 import { Event } from './event';
-import { toObjectId } from '../repositories/sessionRepository';
+import { toObjectId } from '../utils';
 
 export interface CreateVisitDto {
     sessionId?: string;
-    timestamp: Date;
-    duration: number;
+    createTimestamp: number; // client will send a timestamp in milliseconds
     referrer: string;
     page: string | null;
-    utm_source: string | null;
+    utmSource: string | null;
 }
 
 export interface UpdateVisitDto {
     id: string;
-    duration: number;
+    updateTimestamp: number; // client will send a timestamp in milliseconds
 }
 
 export interface Visit extends Document {
     sessionId?: Types.ObjectId;
-    timestamp: Date;
-    duration: number;
+    clientCreatedAt: Date; // time sent by the client
+    clientUpdatedAt: Date; // time sent by the client
     referrer: string;
     page: string | null;
-    utm_source: string | null;
+    utmSource: string | null;
     events?: Event[];
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: Date; // time created by the server
+    updatedAt: Date; // time updated by the server
+    // Note: duration is stored in the database, it is calculated on the fly
+    duration: number; // duration in milliseconds
+    updateDuration(updateDate: Date): Promise<Visit>;
 }
 
 const visitSchema = new Schema<Visit>({    
@@ -41,38 +43,32 @@ const visitSchema = new Schema<Visit>({
             message: 'Invalid ObjectId'
         }
     },
-    timestamp: { 
+    clientCreatedAt: { 
         type: Date, 
         required: true,
-        default: Date.now,
-        index: true
+        default: Date.now
     },
-    duration: { 
-        type: Number,
+    clientUpdatedAt: { 
+        type: Date,
         required: true,
-        default: 0,
-        min: 0,
-        validate: {
-            validator: Number.isInteger,
-            message: 'Duration must be an integer'
-        }
+        default: Date.now
     },
     referrer: { 
         type: String,
         required: true,
-        default: '(direct)',
-        index: true
+        default: '(direct)'
     },
     page: { 
         type: String,
-        default: null,
-        index: true
+        default: null
     },
-    utm_source: { 
+    utmSource: { 
         type: String,
-        default: null,
-        index: true,
-        sparse: true
+        default: null
+    },
+    duration: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true,
@@ -85,6 +81,13 @@ const visitSchema = new Schema<Visit>({
     }
 });
 
+// Indexes
+visitSchema.index({ clientCreatedAt: 1 });
+visitSchema.index({ clientUpdatedAt: 1 });
+visitSchema.index({ referrer: 1 });
+visitSchema.index({ page: 1 });
+visitSchema.index({ utmSource: 1 }, { sparse: true });
+
 // Virtual populate for events
 visitSchema.virtual('events', {
     ref: 'Event',
@@ -92,15 +95,10 @@ visitSchema.virtual('events', {
     foreignField: 'visit'
 });
 
-// Compound indexes for common queries
-visitSchema.index({ timestamp: 1, referrer: 1 });
-visitSchema.index({ timestamp: 1, utm_source: 1 });
-// Add compound index for sessionId and timestamp
-visitSchema.index({ sessionId: 1, timestamp: 1 });
 
 // Instance methods
-visitSchema.methods.updateDuration = async function(duration: number) {
-    this.duration = duration;
+visitSchema.methods.updateDuration = async function(updateDate: Date) {
+    this.duration = updateDate.getTime() - this.clientCreatedAt.getTime();
     return await this.save();
 };
 
@@ -115,18 +113,9 @@ visitSchema.statics.findBySessionId = async function(sessionId: string | Types.O
         sessionId = toObjectId(sessionId);
     }
     return this.find({ sessionId })
-        .sort({ timestamp: 1 })
+        .sort({ clientCreatedAt: -1 })
         .populate('events');
 };
-
-// Middleware
-visitSchema.pre('save', function(next) {
-    // Ensure timestamp is set
-    if (!this.timestamp) {
-        this.timestamp = new Date();
-    }
-    next();
-});
 
 // Export model with static methods
 export const VisitModel = model<Visit, VisitModel>('Visit', visitSchema);
