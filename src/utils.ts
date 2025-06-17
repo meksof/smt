@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 
 // Helper function to build date range queries
-export const buildDateQuery = (startDate?: string, endDate?: string, timeField = 'clientCreatedAt') => {
+export const buildDateQuery = (startDate?: string, endDate?: string, timeField = 'createdAt') => {
     const query: any = {};
     if (startDate || endDate) {
         query[timeField] = {};

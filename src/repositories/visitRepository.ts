@@ -72,13 +72,13 @@ export const getTopReferrers = async (startDate: string, endDate: string) => {
 
 export const getTrafficSources = async (startDate: string, endDate: string) => {
     const query = buildDateQuery(startDate, endDate);
-    query.utm_source = { $ne: null };
+    query.utmSource = { $ne: null };
 
     const result = await VisitModel.aggregate([
         { $match: query },
         { 
             $group: { 
-                _id: "$utm_source", 
+                _id: "$utmSource", 
                 count: { $sum: 1 } 
             } 
         },
@@ -86,7 +86,7 @@ export const getTrafficSources = async (startDate: string, endDate: string) => {
     ]);
 
     return result.map(item => ({ 
-        utm_source: item._id, 
+        utmSource: item._id, 
         count: item.count 
     }));
 };

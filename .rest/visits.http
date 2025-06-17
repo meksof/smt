@@ -1,11 +1,2 @@
 # Get all visits
-GET http://localhost:3000/visit?startDate=2024-06-01&endDate=2024-06-02 HTTP/1.1
-
-HTTP/1.1 200  - OK
-x-powered-by: Express
-access-control-allow-origin: *
-content-type: application/json; charset=utf-8
-content-length: 1230
-etag: W/"4ce-U09nE3jEVzOy8Zj3c7NrikOlK6E"
-date: Wed, 04 Jun 2025 08:51:54 GMT
-connection: close
+GET http://localhost:3000/visit?startDate=2025-06-17&endDate=2025-06-17 HTTP/1.1
