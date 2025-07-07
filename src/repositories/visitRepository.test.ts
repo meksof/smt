@@ -26,7 +26,7 @@ describe('visitRepository', () => {
 
             // Verify countDocuments was called with the correct query
             expect(mockCountDocuments).toHaveBeenCalledWith({
-                clientCreatedAt: {
+                createdAt: {
                     $gte: expect.any(Date), // Start of June 1, 2025
                     $lte: expect.any(Date)  // End of June 30, 2025
                 }
@@ -34,8 +34,8 @@ describe('visitRepository', () => {
 
             // Verify the exact dates in the query
             const query = mockCountDocuments.mock.calls[0][0];
-            expect(query.clientCreatedAt.$gte.toISOString()).toBe('2025-06-01T00:00:00.000Z');
-            expect(query.clientCreatedAt.$lte.toISOString()).toBe('2025-06-30T23:59:59.999Z');
+            expect(query.createdAt.$gte.toISOString()).toBe('2025-06-01T00:00:00.000Z');
+            expect(query.createdAt.$lte.toISOString()).toBe('2025-06-30T23:59:59.999Z');
         });
 
         it('should return 0 when no visits are found', async () => {
@@ -85,9 +85,9 @@ describe('visitRepository', () => {
             // Mock countDocuments to simulate counting based on date range
             const mockCountDocuments = jest.fn().mockImplementation((query) => {
                 return visits.filter(visit => {
-                    const visitDate = new Date(visit.clientCreatedAt);
-                    const startDate = query.clientCreatedAt?.$gte;
-                    const endDate = query.clientCreatedAt?.$lte;
+                    const visitDate = new Date(visit.createdAt);
+                    const startDate = query.createdAt?.$gte;
+                    const endDate = query.createdAt?.$lte;
                     
                     if (!startDate && !endDate) return true;
                     if (!startDate) return visitDate <= endDate;
@@ -124,7 +124,7 @@ describe('visitRepository', () => {
                 
                 // Verify query structure
                 expect(mockCountDocuments).toHaveBeenCalledWith({
-                    clientCreatedAt: {
+                    createdAt: {
                         $gte: expect.any(Date),
                         $lte: expect.any(Date)
                     }

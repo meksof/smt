@@ -22,15 +22,15 @@ describe('sessionRepository', () => {
           _id: new Types.ObjectId('683eb932a23cf1932af96338'),
           sessionId: sessionId,
           duration: 1000,
-          clientCreatedAt: new Date('2025-06-06T10:18:54.893Z'),
-          clientUpdatedAt: new Date('2025-06-06T10:18:54.893Z'),
+          createdAt: new Date('2025-06-06T10:18:54.893Z'),
+          updatedAt: new Date('2025-06-06T10:19:54.893Z'),
         },
         {
           _id: new Types.ObjectId('683ec5c835dfac72a7096b42'),
           sessionId: sessionId,
           duration: 2000,
-          clientCreatedAt: new Date('2025-06-06T10:18:54.895Z'),
-          clientUpdatedAt: new Date('2025-06-06T10:18:54.895Z'),
+          createdAt: new Date('2025-06-06T10:18:54.895Z'),
+          updatedAt: new Date('2025-06-06T10:20:54.895Z'),
         }
       ];
 
@@ -80,8 +80,8 @@ describe('sessionRepository', () => {
             {
               _id: new Types.ObjectId('683dc84f3e6713336beca4b5'),
               sessionId: sessionId,
-              clientCreatedAt: new Date(1717238400000),
-              clientUpdatedAt: new Date(1717238450000),
+              createdAt: new Date(1717238400000),
+              updatedAt: new Date(1717238450000),
               duration: 50000 // 50 seconds
             }
           ],
@@ -173,8 +173,8 @@ describe('sessionRepository', () => {
             {
               _id: new Types.ObjectId('683dc84f3e6713336beca4b5'),
               sessionId: sessionId1,
-              clientCreatedAt: new Date(1717238400000),
-              clientUpdatedAt: new Date(1717238450000),
+              createdAt: new Date(1717238400000),
+              updatedAt: new Date(1717238450000),
               duration: 50000 // 50 seconds
             }
           ],
@@ -189,8 +189,8 @@ describe('sessionRepository', () => {
             {
               _id: new Types.ObjectId('683dc84f3e6713336beca4b6'),
               sessionId: sessionId2,
-              clientCreatedAt: new Date(1717324800000),
-              clientUpdatedAt: new Date(1717324828000),
+              createdAt: new Date(1717324800000),
+              updatedAt: new Date(1717324828000),
               duration: 28000 // 28 seconds
             }
           ],

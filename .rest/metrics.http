@@ -9,4 +9,4 @@ GET http://localhost:3000/metrics/sources?startDate=2025-06-17&endDate=2025-06-1
 GET http://localhost:3000/metrics/events?startDate=2025-06-02&endDate=2025-06-03 HTTP/1.1
 ###
 # Metrics - Get average session duration
-GET http://localhost:3000/metrics/sessions/average?startDate=2025-06-03&endDate=2025-06-03 HTTP/1.1
+GET http://localhost:3000/metrics/sessions/average?startDate=2025-07-07&endDate=2025-07-07 HTTP/1.1
