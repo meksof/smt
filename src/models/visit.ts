@@ -30,39 +30,39 @@ export interface Visit extends Document {
     updateDuration(updateDate: Date): Promise<Visit>;
 }
 
-const visitSchema = new Schema<Visit>({    
-    sessionId: { 
+const visitSchema = new Schema<Visit>({
+    sessionId: {
         type: Schema.Types.ObjectId,
         ref: 'Session',
         index: true,
         sparse: true,
         validate: {
-            validator: function(v: Types.ObjectId) {
+            validator: function (v: Types.ObjectId) {
                 return Types.ObjectId.isValid(v);
             },
             message: 'Invalid ObjectId'
         }
     },
-    clientCreatedAt: { 
-        type: Date, 
-        required: true,
-        default: Date.now
-    },
-    clientUpdatedAt: { 
+    clientCreatedAt: {
         type: Date,
         required: true,
         default: Date.now
     },
-    referrer: { 
+    clientUpdatedAt: {
+        type: Date,
+        required: true,
+        default: Date.now
+    },
+    referrer: {
         type: String,
         required: true,
         default: '(direct)'
     },
-    page: { 
+    page: {
         type: String,
         default: null
     },
-    utmSource: { 
+    utmSource: {
         type: String,
         default: null
     },
@@ -75,7 +75,9 @@ const visitSchema = new Schema<Visit>({
     toJSON: {
         virtuals: true,
         transform: (doc, ret) => {
-            delete ret?.__v;
+            if (ret && typeof ret === 'object' && '__v' in ret) {
+                delete ret.__v;
+            }
             return ret;
         }
     }
@@ -97,7 +99,7 @@ visitSchema.virtual('events', {
 
 
 // Instance methods
-visitSchema.methods.updateDuration = async function(updateDate: Date) {
+visitSchema.methods.updateDuration = async function (updateDate: Date) {
     this.duration = updateDate.getTime() - this.clientCreatedAt.getTime();
     return await this.save();
 };
@@ -108,7 +110,7 @@ interface VisitModel extends Model<Visit> {
 }
 
 // Static methods
-visitSchema.statics.findBySessionId = async function(sessionId: string | Types.ObjectId): Promise<Visit[]> {
+visitSchema.statics.findBySessionId = async function (sessionId: string | Types.ObjectId): Promise<Visit[]> {
     if (typeof sessionId === 'string') {
         sessionId = toObjectId(sessionId);
     }
