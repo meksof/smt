@@ -8,6 +8,7 @@ export interface Session extends Document {
     // Virtual fields
     visits?: Visit[];
     duration?: number;
+    __v?: number;
 }
 
 const sessionSchema = new Schema<Session>({

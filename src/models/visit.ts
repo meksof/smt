@@ -28,6 +28,7 @@ export interface Visit extends Document {
     // Note: duration is stored in the database, it is calculated on the fly
     duration: number; // duration in milliseconds
     updateDuration(updateDate: Date): Promise<Visit>;
+    __v?: number;
 }
 
 const visitSchema = new Schema<Visit>({
