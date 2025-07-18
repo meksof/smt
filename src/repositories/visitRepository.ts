@@ -1,4 +1,4 @@
-import { buildDateQuery } from '../utils';
+import { buildDateQuery, millisecondsToSeconds } from '../utils';
 import { VisitModel, CreateVisitDto, UpdateVisitDto } from '../models/visit';
 import { getOrCreateSession } from './sessionRepository';
 import { Session } from '../models/session';
@@ -22,9 +22,10 @@ export const createVisit = async (visitData: CreateVisitDto) => {    try {
 
 export const updateVisitDuration = async (visit: UpdateVisitDto) => {
     try {
+        const durationInSeconds =  millisecondsToSeconds(visit.duration);
         const result = await VisitModel.findByIdAndUpdate(
             visit.id,
-            { $set: { duration: visit.duration, clientUpdatedAt: visit.updateTimestamp } },
+            { $set: { duration: durationInSeconds, clientUpdatedAt: visit.updateTimestamp } },
             { new: true, runValidators: true }
         );
 

@@ -15,7 +15,7 @@ export interface UpdateVisitDto {
     /* 
     * Client should send a duration in milliseconds
     */
-    duration: number;
+    duration: number; // duration in milliseconds
     updateTimestamp: number; // client, optionaly, send a timestamp in milliseconds
 }
 
