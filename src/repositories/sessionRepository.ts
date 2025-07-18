@@ -69,7 +69,7 @@ export const getAverageSessionsDuration = async (startDate: string, endDate: str
         // Calculate average duration
         const averageDuration = totalDuration / sessions.length;
         
-        return { averageDuration: millisecondsToSeconds(averageDuration) };
+        return { averageDuration: averageDuration };
     } catch (err) {
         console.error('Error calculating average session duration:', err);
         throw err;

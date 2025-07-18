@@ -7,7 +7,7 @@ export interface Session extends Document {
     updatedAt: Date;
     // Virtual fields
     visits?: Visit[];
-    duration?: number;
+    duration?: number; // duration in seconds
     __v?: number;
 }
 
