@@ -30,22 +30,24 @@ export const createVisit = async (req: Request, res: Response) => {
 export const updateVisit = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+        let duration: number;
         let updateTimestamp: number;
 
         if (req.headers['content-type']?.includes('multipart/form-data')) {
             // Handle multipart/form-data
-            const formData = req.body as { updateTimestamp: string };
-            if (!formData.updateTimestamp) {
-                return res.status(400).json({ error: 'updateTimestamp is required' });
+            const formData = req.body as { duration: string, updateTimestamp: string };
+            if (!formData.duration) {
+                return res.status(400).json({ error: 'duration is required' });
             }
-
+            duration = parseInt(formData.duration);
             updateTimestamp = parseInt(formData.updateTimestamp);
         } else {
+            duration = parseInt(req.body.duration);
             updateTimestamp = parseInt(req.body.updateTimestamp);
         }
 
-        if (!isValidTimestamp(updateTimestamp)) {
-            return res.status(400).json({ error: 'Invalid updateTimestamp value' });
+        if (isNaN(duration) || duration < 0) {
+            return res.status(400).json({ error: 'Invalid duration value' });
         }
 
         if (!ObjectId.isValid(id)) {
@@ -54,12 +56,13 @@ export const updateVisit = async (req: Request, res: Response) => {
 
         const visit: UpdateVisitDto = {
             id,
+            duration,
             updateTimestamp
-        }
+        };
 
         const result = await visitModel.updateVisitDuration(visit);
 
-        if (result._id === null) {
+        if (!result) {
             return res.status(404).json({ error: 'Visit not found' });
         }
 

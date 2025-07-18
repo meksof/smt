@@ -12,7 +12,11 @@ export interface CreateVisitDto {
 
 export interface UpdateVisitDto {
     id: string;
-    updateTimestamp: number; // client will send a timestamp in milliseconds
+    /* 
+    * Client should send a duration in milliseconds
+    */
+    duration: number;
+    updateTimestamp: number; // client, optionaly, send a timestamp in milliseconds
 }
 
 export interface Visit extends Document {
