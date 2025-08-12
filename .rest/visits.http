@@ -1,2 +1,2 @@
 # Get all visits
-GET http://localhost:3000/visit?startDate=2025-07-18&endDate=2025-07-18 HTTP/1.1
+GET http://localhost:3000/visit?startDate=2025-08-12&endDate=2025-08-12 HTTP/1.1

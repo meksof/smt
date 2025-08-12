@@ -2,16 +2,20 @@ import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import * as visitModel from '../repositories/visitRepository';
 import { CreateVisitDto, UpdateVisitDto } from '../models/visit';
-import { isValidTimestamp } from '../utils';
+
 
 export const createVisit = async (req: Request, res: Response) => {
     try {
+        const ip = req.clientIp;
+
         const { referrer, page, utmSource, createTimestamp } = req.body;
         const visit: CreateVisitDto = {
             createTimestamp: createTimestamp,
             referrer: referrer || '(direct)',
             page: page || null,
             utmSource: utmSource || null,
+            userAgent: req.headers['user-agent'] || undefined,
+            ip: ip || undefined
         };
 
         if (req.body.sessionId !== undefined)

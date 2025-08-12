@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { SessionModel, Session } from '../models/session';
-import { buildDateQuery, millisecondsToSeconds } from '../utils';
+import { buildDateQuery } from '../utils';
+import { CreateVisitDto } from '../models/visit';
 
 // Utility functions for session ID conversion
 export const toObjectId = (id: string): Types.ObjectId => {
@@ -11,22 +12,29 @@ export const toObjectId = (id: string): Types.ObjectId => {
     }
 };
 
-export const getOrCreateSession = async (sessionId?: string): Promise<Session> => {
+export const getOrCreateSession = async (visit: CreateVisitDto): Promise<Session> => {
     try {
-        if (!sessionId) {
+        if (!visit.sessionId) {
             // Create new session with new ObjectId
-            const newSession = new SessionModel({})
+            const newSession = new SessionModel({
+                userAgent: visit.userAgent,
+                ip: visit.ip
+            })
             const result = await newSession.save();
             return result;
         }
 
         // Check if session exists
-        const existingSession = await SessionModel.findById(toObjectId(sessionId));
+        const existingSession = await SessionModel.findById(toObjectId(visit.sessionId));
         if (existingSession) {
             return existingSession;
         }
         // If session does not exist, create a new one
-        const newSession = new SessionModel({ _id: toObjectId(sessionId) });
+        const newSession = new SessionModel({
+            _id: toObjectId(visit.sessionId),
+            userAgent: visit.userAgent,
+            ip: visit.ip
+        });
         const result = await newSession.save();
         return result;
     } catch (err) {
@@ -48,27 +56,27 @@ export const getSessionsByDateRange = async (startDate: string, endDate: string)
     }
 };
 
-export const getAverageSessionsDuration = async (startDate: string, endDate: string): Promise<{averageDuration: number}> => {
+export const getAverageSessionsDuration = async (startDate: string, endDate: string): Promise<{ averageDuration: number }> => {
     try {
         const sessions = await getSessionsByDateRange(startDate, endDate);
-        
+
         if (sessions.length === 0) {
             return { averageDuration: 0 };
         }
-        
+
         // Calculate total duration across all sessions
         let totalDuration = 0;
-        
+
         for (const session of sessions) {
             // Use the virtual 'duration' field from the session model
             if (session.duration) {
                 totalDuration += session.duration;
             }
         }
-        
+
         // Calculate average duration
         const averageDuration = totalDuration / sessions.length;
-        
+
         return { averageDuration: averageDuration };
     } catch (err) {
         console.error('Error calculating average session duration:', err);
@@ -81,7 +89,7 @@ export const _getSession = async (sessionId: string) => {
         const session = await SessionModel.findById(toObjectId(sessionId))
             .populate('visits')
             .exec();
-        
+
         return session;
     } catch (err) {
         console.error('Error getting visits by session:', err);

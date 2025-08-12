@@ -8,6 +8,8 @@ export interface CreateVisitDto {
     referrer: string;
     page: string | null;
     utmSource: string | null;
+    userAgent?: string; // user agent field
+    ip?: string; // client IP address
 }
 
 export interface UpdateVisitDto {

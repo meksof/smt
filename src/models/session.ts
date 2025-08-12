@@ -3,6 +3,8 @@ import { Visit } from './visit';
 
 export interface Session extends Document {
     _id: Types.ObjectId;
+    userAgent?: string;
+    ip?: string;
     createdAt: Date;
     updatedAt: Date;
     // Virtual fields
@@ -16,6 +18,16 @@ const sessionSchema = new Schema<Session>({
         type: Schema.Types.ObjectId,
         default: () => new Types.ObjectId(),
         required: true
+    },
+    userAgent: {
+        type: String,
+        required: false,
+        trim: true
+    },
+    ip: {
+        type: String,
+        required: false,
+        trim: true
     }
 }, {
     timestamps: true,

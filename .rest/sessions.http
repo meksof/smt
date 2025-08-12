@@ -1,5 +1,5 @@
 # Get vists by session ID
-GET http://localhost:3000/session/684c5148c97c77c1eabb3249 HTTP/1.1
+GET http://localhost:3000/session/689af68ff38c618105ac4389 HTTP/1.1
 ###
 # Get Sessions
-GET http://localhost:3000/session?startDate=2025-07-18&endDate=2025-07-18 HTTP/1.1
+GET http://localhost:3000/session?startDate=2025-08-12&endDate=2025-08-12 HTTP/1.1

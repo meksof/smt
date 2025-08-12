@@ -6,6 +6,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import requestIp from 'request-ip';
 
 import metricsRoutes from './routes/metricsRoutes';
 import trackRoutes from './routes/trackRoutes';
@@ -67,6 +68,8 @@ async function connectDB(): Promise<void> {
 
 // Middleware
 app.use(cors());
+
+app.use(requestIp.mw());
 app.use(bodyParser.json()); // for application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for application/x-www-form-urlencoded
 

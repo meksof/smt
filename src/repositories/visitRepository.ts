@@ -3,9 +3,10 @@ import { VisitModel, CreateVisitDto, UpdateVisitDto } from '../models/visit';
 import { getOrCreateSession } from './sessionRepository';
 import { Session } from '../models/session';
 
-export const createVisit = async (visitData: CreateVisitDto) => {    try {
+export const createVisit = async (visitData: CreateVisitDto) => {
+    try {
         // Get or create session ID
-        const session: Session = await getOrCreateSession(visitData.sessionId);
+        const session: Session = await getOrCreateSession(visitData);
         
         // Create visit with session ID
         const visit = new VisitModel({
