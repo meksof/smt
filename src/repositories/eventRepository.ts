@@ -11,7 +11,8 @@ export const getEvents = async (startDate: string, endDate: string) => {
                     type: "$type",
                     value: "$value"
                 },
-                count: { $sum: 1 }
+                count: { $sum: 1 },
+                timestamp: { $first: "$timestamp" }
             }
         },
         {
@@ -19,6 +20,7 @@ export const getEvents = async (startDate: string, endDate: string) => {
                 type: "$_id.type",
                 value: "$_id.value",
                 count: 1,
+                date: "$timestamp",
                 _id: 0
             }
         }
