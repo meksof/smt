@@ -1,2 +1,23 @@
 # Get all visits
 GET http://localhost:3000/visit?startDate=2025-08-12&endDate=2025-08-12 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 3433
+etag: W/"d69-UrZW7Olp7M8gN4N2MfJjjR9P1S8"
+date: Sun, 08 Feb 2026 14:07:12 GMT
+connection: close
+###
+# Get visits by session ID
+GET http://localhost:3000/visit/689af68ff38c618105ac4389 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 662
+etag: W/"296-P5hbQeCTfcmRQN6jtOsPmMi2FsU"
+date: Sun, 08 Feb 2026 14:12:09 GMT
+connection: close

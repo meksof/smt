@@ -1,14 +1,16 @@
 import { Request, Response } from 'express';
-import { Types } from 'mongoose';
 import { _getSession, getSessionsByDateRange } from '../repositories/sessionRepository';
+import { isValidId } from '../utils';
 
 export const getSession = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
-        if (!Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ error: 'Invalid session ID format' });        }
-        
+        // id should be valid
+        if (!isValidId(id)) {
+            return res.status(400).json({ error: 'Invalid session ID format' });
+        }
+
         const session = await _getSession(id);
         if (!session) {
             return res.status(404).json({ error: 'Session not found' });

@@ -1,12 +1,30 @@
 # Metrics - Get all visits
-GET http://localhost:3000/metrics/views?startDate=2025-06-01&endDate=2025-06-25 HTTP/1.1
+GET http://localhost:3000/metrics/views?startDate=2025-06-01&endDate=2025-08-25 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 18
+etag: W/"12-8utrXoXr57E4rXCnJozz/S2FYYE"
+date: Sun, 08 Feb 2026 13:46:45 GMT
+connection: close
 ###
 # get traffic sources
 GET http://localhost:3000/metrics/sources?startDate=2025-06-17&endDate=2025-06-17 HTTP/1.1
 # get top referrers
 ###
 # get all events
-GET http://localhost:3000/metrics/events?startDate=2025-06-02&endDate=2025-06-03 HTTP/1.1
+GET http://localhost:3000/metrics/events?startDate=2025-08-12&endDate=2026-08-12 HTTP/1.1
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 2
+etag: W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"
+date: Sun, 08 Feb 2026 13:45:23 GMT
+connection: close
 ###
 # Metrics - Get average session duration
 GET http://localhost:3000/metrics/sessions/average?startDate=2025-07-07&endDate=2025-07-07 HTTP/1.1

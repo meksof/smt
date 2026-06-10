@@ -1,0 +1,19 @@
+# Add an event to a visit
+POST http://localhost:3000/event HTTP/1.1
+Content-Type: application/json
+
+{
+    "type": "click",
+    "value": "REST_test_button",
+    "timestamp": 1752822584000,
+    "visitId": "689af68ff38c618105ac438b"
+}
+
+HTTP/1.1 200  - OK
+x-powered-by: Express
+access-control-allow-origin: *
+content-type: application/json; charset=utf-8
+content-length: 33
+etag: W/"21-B9Hzp/iM6cRlE5yVqhoV8drPFfA"
+date: Sun, 08 Feb 2026 14:04:20 GMT
+connection: close

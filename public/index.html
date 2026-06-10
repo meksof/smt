@@ -225,6 +225,7 @@
                             <th>Type</th>
                             <th>Value</th>
                             <th>Count</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -331,10 +332,12 @@
                         tbody.innerHTML = '';
                         data.forEach(item => {
                             const row = document.createElement('tr');
+                            const eventDate = item.date ? new Date(item.date).toLocaleDateString() : 'N/A';
                             row.innerHTML = `
                             <td>${item.type}</td>
                             <td>${item.value}</td>
                             <td>${item.count}</td>
+                            <td>${eventDate}</td>
                         `;
                             tbody.appendChild(row);
                         });

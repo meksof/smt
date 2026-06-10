@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { SessionModel, Session } from '../models/session';
-import { buildDateQuery } from '../utils';
+import { buildDateQuery, millisecondsToSeconds } from '../utils';
 import { CreateVisitDto } from '../models/visit';
 
 // Utility functions for session ID conversion
@@ -56,12 +56,12 @@ export const getSessionsByDateRange = async (startDate: string, endDate: string)
     }
 };
 
-export const getAverageSessionsDuration = async (startDate: string, endDate: string): Promise<{ averageDuration: number }> => {
+export const getAverageSessionsDuration = async (startDate: string, endDate: string): Promise<{ averageDurationInSeconds: number }> => {
     try {
         const sessions = await getSessionsByDateRange(startDate, endDate);
 
         if (sessions.length === 0) {
-            return { averageDuration: 0 };
+            return { averageDurationInSeconds: 0 };
         }
 
         // Calculate total duration across all sessions
@@ -69,15 +69,15 @@ export const getAverageSessionsDuration = async (startDate: string, endDate: str
 
         for (const session of sessions) {
             // Use the virtual 'duration' field from the session model
-            if (session.duration) {
-                totalDuration += session.duration;
+            if (session.durationInMilliSec) {
+                totalDuration += session.durationInMilliSec;
             }
         }
 
         // Calculate average duration
         const averageDuration = totalDuration / sessions.length;
 
-        return { averageDuration: averageDuration };
+        return { averageDurationInSeconds: millisecondsToSeconds(averageDuration) };
     } catch (err) {
         console.error('Error calculating average session duration:', err);
         throw err;

@@ -23,10 +23,9 @@ export const createVisit = async (visitData: CreateVisitDto) => {
 
 export const updateVisitDuration = async (visit: UpdateVisitDto) => {
     try {
-        const durationInSeconds =  millisecondsToSeconds(visit.duration);
         const result = await VisitModel.findByIdAndUpdate(
             visit.id,
-            { $set: { duration: durationInSeconds, clientUpdatedAt: visit.updateTimestamp } },
+            { $set: { durationInMilliSec: visit.durationInMilliSec, clientUpdatedAt: visit.updateTimestamp } },
             { new: true, runValidators: true }
         );
 
@@ -98,7 +97,6 @@ export const getVisitsBySessionId = async (sessionId: string) => {
     try {
         return await VisitModel.findBySessionId(sessionId);
     } catch (err) {
-        console.error('Error finding visits by session ID:', err);
         throw err;
     }
 };

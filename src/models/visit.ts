@@ -1,6 +1,5 @@
 import { Schema, model, Document, Types, Model } from 'mongoose';
 import { Event } from './event';
-import { toObjectId } from '../utils';
 
 export interface CreateVisitDto {
     sessionId?: string;
@@ -17,7 +16,7 @@ export interface UpdateVisitDto {
     /* 
     * Client should send a duration in milliseconds
     */
-    duration: number; // duration in milliseconds
+    durationInMilliSec: number; // duration in milliseconds
     updateTimestamp: number; // client, optionaly, send a timestamp in milliseconds
 }
 
@@ -32,7 +31,7 @@ export interface Visit extends Document {
     createdAt: Date; // time created by the server
     updatedAt: Date; // time updated by the server
     // Note: duration is stored in the database, it is calculated on the fly
-    duration: number; // duration in milliseconds
+    durationInMilliSec: number; // duration in milliseconds
     updateDuration(updateDate: Date): Promise<Visit>;
     __v?: number;
 }
@@ -73,7 +72,7 @@ const visitSchema = new Schema<Visit>({
         type: String,
         default: null
     },
-    duration: {
+    durationInMilliSec: {
         type: Number,
         default: 0
     }
@@ -113,14 +112,11 @@ visitSchema.methods.updateDuration = async function (updateDate: Date) {
 
 // Static methods interface
 interface VisitModel extends Model<Visit> {
-    findBySessionId(sessionId: string | Types.ObjectId): Promise<Visit[]>;
+    findBySessionId(sessionId: string): Promise<Visit[]>;
 }
 
 // Static methods
-visitSchema.statics.findBySessionId = async function (sessionId: string | Types.ObjectId): Promise<Visit[]> {
-    if (typeof sessionId === 'string') {
-        sessionId = toObjectId(sessionId);
-    }
+visitSchema.statics.findBySessionId = async function (sessionId: string): Promise<Visit[]> {
     return this.find({ sessionId })
         .sort({ clientCreatedAt: -1 })
         .populate('events');

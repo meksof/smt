@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import * as visitModel from '../repositories/visitRepository';
 import { CreateVisitDto, UpdateVisitDto } from '../models/visit';
+import { isValidId } from '../utils';
 
 
 export const createVisit = async (req: Request, res: Response) => {
@@ -34,6 +35,11 @@ export const createVisit = async (req: Request, res: Response) => {
 export const updateVisit = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+
+        if (typeof id !== 'string') {
+            return res.status(400).json({ error: 'Visit ID must be a string' });
+        }
+
         let duration: number;
         let updateTimestamp: number;
 
@@ -60,7 +66,7 @@ export const updateVisit = async (req: Request, res: Response) => {
 
         const visit: UpdateVisitDto = {
             id,
-            duration,
+            durationInMilliSec: duration,
             updateTimestamp
         };
 
@@ -82,6 +88,27 @@ export const getVisits = async (req: Request, res: Response) => {
         const { startDate, endDate } = req.query;
         const visits = await visitModel.getVisitsWithEvents(startDate as string, endDate as string);
         res.json(visits);
+    } catch (err) {
+        const error = err as Error;
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const getVisitsBySessionId = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        
+        if (!isValidId(id)) {
+            return res.status(400).json({ error: 'Invalid session ID format' });
+        }
+
+        const result = await visitModel.getVisitsBySessionId(id);
+        
+        if (!result) {
+            return res.status(404).json({ error: 'Visits not found for the given session ID' });
+        }
+
+        res.json(result);
     } catch (err) {
         const error = err as Error;
         res.status(500).json({ error: error.message });

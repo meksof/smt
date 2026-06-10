@@ -9,7 +9,7 @@ export interface Session extends Document {
     updatedAt: Date;
     // Virtual fields
     visits?: Visit[];
-    duration?: number; // duration in seconds
+    durationInMilliSec?: number; // duration in seconds
     __v?: number;
 }
 
@@ -49,13 +49,13 @@ sessionSchema.virtual('visits', {
     foreignField: 'sessionId'  // Visit's sessionId field that references Session
 });
 
-sessionSchema.virtual('duration', {
+sessionSchema.virtual('durationInMilliSec', {
     ref: 'Visit',
     localField: '_id',
     foreignField: 'sessionId',
     justOne: false,
     get: function() {
-        return this.visits?.reduce((sum: number, visit: Visit) => sum + visit.duration, 0) || 0;
+        return this.visits?.reduce((sum: number, visit: Visit) => sum + visit.durationInMilliSec, 0) || 0;
     }
 });
 

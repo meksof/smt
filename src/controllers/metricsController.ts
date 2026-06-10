@@ -17,7 +17,7 @@ export const getAverageSessionsDuration = async (req: Request, res: Response) =>
     try {
         const { startDate, endDate } = req.query;
         const result = await sessionModel.getAverageSessionsDuration(startDate as string, endDate as string);
-        res.json({ averageDuration: result?.averageDuration || 0 });
+        res.json({ averageDuration: result?.averageDurationInSeconds || 0 });
     } catch (err) {
         const error = err as Error;
         res.status(500).json({ error: error.message });

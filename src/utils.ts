@@ -1,8 +1,19 @@
 import { Types } from "mongoose";
 
+export type TimeField = 'createdAt' | 'clientCreatedAt' | 'timestamp';
+
+type DateQuery = {
+    [key in TimeField]?: {
+        $gte?: Date;
+        $lte?: Date;
+    }
+}
+
+export type Query = DateQuery & { utmSource?: { $ne: null } };
+
 // Helper function to build date range queries
-export const buildDateQuery = (startDate?: string, endDate?: string, timeField = 'createdAt') => {
-    const query: any = {};
+export const buildDateQuery = (startDate?: string, endDate?: string, timeField: TimeField = 'createdAt') => {
+    const query: Query = {};
     if (startDate || endDate) {
         query[timeField] = {};
         if (startDate) {
@@ -38,3 +49,14 @@ export const isValidTimestamp = (timestamp: number): boolean => {
 
 export const millisecondsToSeconds = (milliseconds: number): number => milliseconds / 1000;
 
+export const isValidId = (id: string | string[]): id is string => {
+    if (typeof id !== 'string') {
+        return false
+    }
+
+    if (!Types.ObjectId.isValid(id)) {
+        return false;
+    }
+
+    return true;
+};
